@@ -1,5 +1,5 @@
 {
-  "name": "expo-code-push-plugin",
+  "name": "@revopush/expo-code-push-plugin",
   "version": "1.0.0",
   "description": "Expo plugin to configure Revopush OTA for React Native",
   "main": "build/withRevopush.js",
