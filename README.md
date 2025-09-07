@@ -33,7 +33,7 @@ module.exports = ({ config }: { config: ExpoConfig }) => ({
     ...config,
     plugins: [
         ["@revopush/expo-code-push-plugin", {   
-            ios: {  // [!code ++]
+            ios: {
                 CodePushDeploymentKey: 'YOUR_DEPLOYMENT_KEY',   
                 CodePushServerUrl: 'https://api.revopush.org'   
             },
