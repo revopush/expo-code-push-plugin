@@ -61,6 +61,23 @@ const withIosPlugin: ConfigPlugin<RevopushConfig> = (config, {ios}) => {
                 );
                 break;
             }
+            case 'objc':
+            case 'objcpp': {
+                config.modResults.contents = mergeContents({
+                    src: modResults.contents,
+                    comment: '//',
+                    tag: 'revopush-updates-header',
+                    offset: 1,
+                    anchor: /#import "AppDelegate\.h"/,
+                    newSrc: '#import <CodePush/CodePush.h>',
+                }).contents;
+
+                config.modResults.contents = config.modResults.contents.replace(
+                    /return \[\[NSBundle mainBundle\] URLForResource:@"main" withExtension:@"jsbundle"\];/,
+                    'return [CodePush bundleURL];'
+                );
+                break;
+            }
             default: {
                 throw new Error(`Revopush plugin doesn't support language: ${language}`);
             }
