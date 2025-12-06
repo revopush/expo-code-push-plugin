@@ -12,12 +12,14 @@ import {mergeContents} from '@expo/config-plugins/build/utils/generateCode';
 
 type RevopushConfig = {
     ios?: {
-        CodePushServerUrl?: string;
         CodePushDeploymentKey: string;
+        CodePushPublicKey?: string;
+        CodePushServerUrl?: string;
     };
     android?: {
-        CodePushServerUrl?: string;
         CodePushDeploymentKey: string;
+        CodePushPublicKey?: string;
+        CodePushServerUrl?: string;
     };
 }
 
@@ -35,6 +37,10 @@ const withIosPlugin: ConfigPlugin<RevopushConfig> = (config, {ios}) => {
 
         if (ios.CodePushServerUrl) {
             config.modResults.CodePushServerURL = ios.CodePushServerUrl;
+        }
+
+        if (ios.CodePushPublicKey) {
+            config.modResults.CodePushPublicKey = ios.CodePushPublicKey;
         }
 
         return config;
@@ -121,6 +127,21 @@ const withAndroidPlugin: ConfigPlugin<RevopushConfig> = (config, {android}) => {
                             translatable: 'false',
                         },
                         _: android.CodePushServerUrl,
+                    },
+                ],
+                config.modResults,
+            );
+        }
+
+        if (android.CodePushPublicKey) {
+            AndroidConfig.Strings.setStringItem(
+                [
+                    {
+                        $: {
+                            name: 'CodePushPublicKey',
+                            translatable: 'false',
+                        },
+                        _: android.CodePushPublicKey,
                     },
                 ],
                 config.modResults,
