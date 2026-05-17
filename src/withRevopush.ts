@@ -180,6 +180,20 @@ const withAndroidPlugin: ConfigPlugin<RevopushConfig> = (config, {android}) => {
         );
 
         if (language === 'kt') {
+            if (modResults.contents.includes('getDefaultReactHost(')) {
+                config.modResults.contents = modResults.contents.replace(/^        }$/m, '        },');
+                config.modResults.contents = mergeContents({
+                    src: config.modResults.contents,
+                    comment: '//',
+                    tag: '@revopush/main-application-kt-react-host',
+                    offset: 1,
+                    anchor: /^        },$/,
+                    newSrc: `      jsBundleFilePath = CodePush.getJSBundleFile(),`,
+                }).contents;
+
+                return config;
+            }
+
             config.modResults.contents = mergeContents({
                 src: modResults.contents,
                 comment: '//',

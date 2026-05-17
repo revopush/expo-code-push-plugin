@@ -13,6 +13,7 @@ Revopush SDK doesn't work with Expo Go because it requires native code changes.
 | Expo SDK  | Revopush SDK | Revopush Expo plugin |
 |-----------|--------------|----------------------|
 | 52+       | 1.3.0        | 1.0.0                |
+| 55+       | 1.6.0        | 1.1.0                |
 
 #### Install Revopush SDK
 
@@ -45,6 +46,8 @@ module.exports = ({ config }: { config: ExpoConfig }) => ({
     ],
 });
 ```
+
+Optionally, you can pass `CodePushPublicKey` with a key generated for [release signing](https://docs.revopush.org/cli/code-signing).
 
 Run prebuild command to generate native ios and android folders
 
