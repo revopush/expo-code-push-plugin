@@ -12,12 +12,14 @@ import {mergeContents} from '@expo/config-plugins/build/utils/generateCode';
 
 type RevopushConfig = {
     ios?: {
-        CodePushServerUrl?: string;
         CodePushDeploymentKey: string;
+        CodePushPublicKey?: string;
+        CodePushServerUrl?: string;
     };
     android?: {
-        CodePushServerUrl?: string;
         CodePushDeploymentKey: string;
+        CodePushPublicKey?: string;
+        CodePushServerUrl?: string;
     };
 }
 
@@ -35,6 +37,10 @@ const withIosPlugin: ConfigPlugin<RevopushConfig> = (config, {ios}) => {
 
         if (ios.CodePushServerUrl) {
             config.modResults.CodePushServerURL = ios.CodePushServerUrl;
+        }
+
+        if (ios.CodePushPublicKey) {
+            config.modResults.CodePushPublicKey = ios.CodePushPublicKey;
         }
 
         return config;
@@ -127,6 +133,21 @@ const withAndroidPlugin: ConfigPlugin<RevopushConfig> = (config, {android}) => {
             );
         }
 
+        if (android.CodePushPublicKey) {
+            AndroidConfig.Strings.setStringItem(
+                [
+                    {
+                        $: {
+                            name: 'CodePushPublicKey',
+                            translatable: 'false',
+                        },
+                        _: android.CodePushPublicKey,
+                    },
+                ],
+                config.modResults,
+            );
+        }
+
         return config;
     });
 
@@ -159,6 +180,20 @@ const withAndroidPlugin: ConfigPlugin<RevopushConfig> = (config, {android}) => {
         );
 
         if (language === 'kt') {
+            if (modResults.contents.includes('getDefaultReactHost(')) {
+                config.modResults.contents = modResults.contents.replace(/^        }$/m, '        },');
+                config.modResults.contents = mergeContents({
+                    src: config.modResults.contents,
+                    comment: '//',
+                    tag: '@revopush/main-application-kt-react-host',
+                    offset: 1,
+                    anchor: /^        },$/,
+                    newSrc: `      jsBundleFilePath = CodePush.getJSBundleFile(),`,
+                }).contents;
+
+                return config;
+            }
+
             config.modResults.contents = mergeContents({
                 src: modResults.contents,
                 comment: '//',
