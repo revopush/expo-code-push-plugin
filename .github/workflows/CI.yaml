@@ -3,19 +3,27 @@ name: CI
 on:
   pull_request:
     branches: [main]
+  # Keep a baseline signal on the protected branch itself, so a red main is
+  # visible even when a PR merges cleanly but the merge result does not build.
+  push:
+    branches: [main]
 
 # Least privilege: CI only reads the repository contents.
 permissions:
   contents: read
 
-# Cancel superseded runs when a PR is updated, to save CI minutes.
+# Cancel superseded runs when a PR is updated, to save CI minutes. Keyed on the
+# PR number when present so pushes to main are never cancelled.
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  # Required status check for merging into main (org-wide branch protection
-  # matches on the job name "check").
+  # Deliberately one job. Splitting lint into its own job would give it a
+  # separate runner, which means a second checkout and a second `npm ci` --
+  # and the install dominates the runtime here, so the split roughly doubled
+  # CI minutes to run one extra five-second command. Required status check for
+  # merging into main matches on the job name "check".
   check:
     name: check
     runs-on: ubuntu-latest
@@ -26,6 +34,8 @@ jobs:
         with:
           persist-credentials: false
 
+      # 20.19.4 rather than 20.19.0: the strictest engines constraint in the
+      # tree is react-native's `^20.19.4 || ^22.13.0 || ^24.3.0 || >=25.0.0`.
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -38,24 +48,8 @@ jobs:
       - name: Build
         run: npm run build
 
-  lint:
-    name: lint
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 20.19.4
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
+      # `!cancelled()` so a build failure still reports the lint result, rather
+      # than hiding it behind a second push.
       - name: Lint
+        if: ${{ !cancelled() }}
         run: npm run lint
